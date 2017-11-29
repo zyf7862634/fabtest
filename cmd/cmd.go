@@ -23,11 +23,11 @@ func NewFabCmd(fileName, host string) *FabCmd {
 	checkAdd("-H", host)
 	checkAdd("-u", SshUserName)
 	checkAdd("-p", SshPwd)
-	return &FabCmd{args: append(args, "-f"), dir: ScriptPath, fileName: fileName}
+	return &FabCmd{args: append(args, "-f"), dir: ScriptPath(), fileName: fileName}
 }
 
 func NewLocalFabCmd(fileName string) *FabCmd {
-	return &FabCmd{args: []string{"-f"}, dir: ScriptPath, fileName: fileName}
+	return &FabCmd{args: []string{"-f"}, dir: ScriptPath(), fileName: fileName}
 }
 
 func (c *FabCmd) SetDir(dir string) {

@@ -1,17 +1,17 @@
 package cmd
 
+import "os"
+
 const (
-	SshUserName = "peersafe"
-	SshPwd = "dev1@peersafe"
-	OutDir = "./configYaml/"
-	InputDir = "./data/"
-	ScriptPath = "./scripts/"
-	TplZookeeper = "./templates/zookeeper.tpl"
-	TplKafka = "./templates/kafka.tpl"
-	TplOrderer = "./templates/orderer.tpl"
-	TplPeer = "./templates/peer.tpl"
+	Domain_Name     = "finblockchain.cn"
+	SshUserName     = "peersafe"
+	SshPwd          = "dev1@peersafe"
+	TplZookeeper    = "./templates/zookeeper.tpl"
+	TplKafka        = "./templates/kafka.tpl"
+	TplOrderer      = "./templates/orderer.tpl"
+	TplPeer         = "./templates/peer.tpl"
 	TplCryptoConfig = "./templates/crypto-config.tpl"
-	TplConfigtx = "./templates/configtx.tpl"
+	TplConfigtx     = "./templates/configtx.tpl"
 
 	TypePeer      = "peer"
 	TypeOrder     = "order"
@@ -45,3 +45,27 @@ const (
 	AdverAddress = "adver_address"
 	BlockChainAddress = "blockchain_address"
 )
+
+func ConfigDir() string{
+	return os.Getenv("PWD") +  "/config/"
+}
+
+func InputDir() string{
+	return os.Getenv("PWD") +  "/data/"
+}
+
+func BinPath() string{
+	return os.Getenv("PWD") +  "/bin/"
+}
+
+func ChannelPath() string{
+	return os.Getenv("PWD") +  "/config/channel-artifacts/"
+}
+
+func ImagePath() string{
+	return os.Getenv("PWD") +  "/images/"
+}
+
+func ScriptPath() string{
+	return os.Getenv("PWD") +  "/scripts/"
+}
