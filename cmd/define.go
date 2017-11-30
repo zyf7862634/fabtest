@@ -1,6 +1,10 @@
 package cmd
 
-import "os"
+import (
+	"os"
+	"io/ioutil"
+	"encoding/json"
+)
 
 const (
 	Domain_Name     = "finblockchain.cn"
@@ -12,6 +16,7 @@ const (
 	TplPeer         = "./templates/peer.tpl"
 	TplCryptoConfig = "./templates/crypto-config.tpl"
 	TplConfigtx     = "./templates/configtx.tpl"
+	TplClient     = "./templates/apiclient.tpl"
 
 	TypePeer      = "peer"
 	TypeOrder     = "order"
@@ -68,4 +73,23 @@ func ImagePath() string{
 
 func ScriptPath() string{
 	return os.Getenv("PWD") +  "/scripts/"
+}
+
+func GetNodeObjList() map[string]interface{}{
+	var inputData map[string]interface{}
+	var jsonData []byte
+	var err error
+
+	inputfile := InputDir() + "node.json"
+	jsonData, err = ioutil.ReadFile(inputfile)
+	if err != nil {
+		return inputData
+	}
+
+	err = json.Unmarshal(jsonData, &inputData)
+	if err != nil {
+		return inputData
+	}
+	return inputData
+
 }

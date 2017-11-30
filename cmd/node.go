@@ -8,21 +8,7 @@ import (
 )
 
 func StartNode(stringType string) error {
-	var inputData map[string]interface{}
-	var jsonData []byte
-	var err error
-
-	inputfile := InputDir() + "node.json"
-	jsonData, err = ioutil.ReadFile(inputfile)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(jsonData, &inputData)
-	if err != nil {
-		return err
-	}
-
+	inputData := GetNodeObjList()
 	peerdomain := inputData[PeerDomain].(string)
 	kfkdomain := inputData[KfkDomain].(string)
 	list := inputData[List].([]interface{})

@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"encoding/json"
 	"github.com/peersafe/fabtest/tpl"
 )
 
@@ -16,25 +14,13 @@ func CreateCert() error {
 	return nil
 }
 
-
-func CreateYamlByJson(strType string) error{
-	var inputData map[string]interface{}
-	var jsonData []byte
-	var err error
-
-	inputfile := InputDir() + strType + ".json"
-	jsonData, err = ioutil.ReadFile(inputfile)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(jsonData, &inputData)
-	if err != nil {
-		return err
-	}
+func CreateYamlByJson(strType string) error {
+	inputData := GetNodeObjList()
 
 	if strType == "configtx" {
 		return tpl.Handler(inputData, TplConfigtx, ConfigDir()+"configtx.yaml")
+	}else if strType == "client" {
+			return tpl.Handler(inputData, TplClient, ConfigDir()+"client.yaml")
 	} else if strType == "crypto-config" {
 		return tpl.Handler(inputData, TplCryptoConfig, ConfigDir()+"crypto-config.yaml")
 	} else if strType == "node" {
@@ -64,13 +50,13 @@ func CreateYamlByJson(strType string) error{
 			}
 			//生成yaml文件
 			outfile = dir + yamlname
-			err := tpl.Handler(value, tplfile, outfile + ".yaml")
+			err := tpl.Handler(value, tplfile, outfile+".yaml")
 			if err != nil {
 				fmt.Errorf(err.Error())
 			}
 		}
 	} else {
-		return fmt.Errorf("%s not exist",strType)
+		return fmt.Errorf("%s not exist", strType)
 	}
 	return nil
 }
@@ -84,7 +70,7 @@ func CreateGenesisBlock() error {
 	return nil
 }
 
-func CreateChannelAnchorPeers(channelName string) error {
+func CreateChannel(channelName string) error {
 	obj := NewFabCmd("create_channel.py", "")
 	err := obj.RunShow("create_channel", BinPath(), ConfigDir(), ChannelPath(), channelName, Domain_Name)
 	if err != nil {
@@ -93,3 +79,98 @@ func CreateChannelAnchorPeers(channelName string) error {
 	return nil
 }
 
+func UpdateAnchor(channelName string) error {
+	inputData := GetNodeObjList()
+	peerdomain := inputData[PeerDomain].(string)
+	list := inputData[List].([]interface{})
+	for _, param := range list {
+		value := param.(map[string]interface{})
+		value[PeerDomain] = peerdomain
+		nodeType := value[NodeType].(string)
+		if nodeType == TypePeer && value[PeerId].(string) == "0" {
+			obj := NewFabCmd("create_channel.py", "")
+			mspid := "Org" + value[OrgId].(string) + "MSP"
+			err := obj.RunShow("update_anchor", BinPath(), ConfigDir(), ChannelPath(), channelName, mspid, peerdomain)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func JoinChannel(channelName string) error {
+	inputData := GetNodeObjList()
+	peerdomain := inputData[PeerDomain].(string)
+	list := inputData[List].([]interface{})
+	for _, param := range list {
+		value := param.(map[string]interface{})
+		value[PeerDomain] = peerdomain
+		nodeType := value[NodeType].(string)
+		if nodeType == TypePeer {
+			obj := NewFabCmd("create_channel.py", "")
+			orgid := value[OrgId].(string)
+			peerid := value[PeerId].(string)
+			peer_address := "peer" + peerid + ".org" + orgid + "." + peerdomain + ":7051"
+			err := obj.RunShow("join_channel", BinPath(), ConfigDir(), ChannelPath(), channelName, peer_address, peerid, orgid, peerdomain)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func InstallChaincode(ccname, ccpath string) error {
+	inputData := GetNodeObjList()
+	peerdomain := inputData[PeerDomain].(string)
+	list := inputData[List].([]interface{})
+	for _, param := range list {
+		value := param.(map[string]interface{})
+		value[PeerDomain] = peerdomain
+		nodeType := value[NodeType].(string)
+		if nodeType == TypePeer {
+			obj := NewFabCmd("chaincode.py", "")
+			orgid := value[OrgId].(string)
+			peerid := value[PeerId].(string)
+			peer_address := "peer" + peerid + ".org" + orgid + "." + peerdomain + ":7051"
+			err := obj.RunShow("install_chaincode", BinPath(), ConfigDir(), peer_address, peerid, orgid, peerdomain, ccname, ccpath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func RunChaincode(channelName, ccname string) error {
+	inputData := GetNodeObjList()
+	peerdomain := inputData[PeerDomain].(string)
+	list := inputData[List].([]interface{})
+	for _, param := range list {
+		value := param.(map[string]interface{})
+		value[PeerDomain] = peerdomain
+		nodeType := value[NodeType].(string)
+		if nodeType == TypePeer {
+			obj := NewFabCmd("chaincode.py", "")
+			orgid := value[OrgId].(string)
+			peerid := value[PeerId].(string)
+			peer_address := "peer" + peerid + ".org" + orgid + "." + peerdomain + ":7051"
+			initparam := ""
+			policy := ""
+			if orgid == "1" && peerid == "0" {
+				err := obj.RunShow("instantiate_chaincode", BinPath(), ConfigDir(), peer_address, peerid, orgid, peerdomain, channelName, ccname, initparam, policy)
+				if err != nil {
+					return err
+				}
+			} else {
+				txargs := ""
+				err := obj.RunShow("test_query_tx", BinPath(), ConfigDir(), peer_address, peerid, orgid, peerdomain, channelName, ccname, txargs)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
