@@ -19,11 +19,9 @@ func CreateYamlByJson(strType string) error {
 
 	if strType == "configtx" {
 		return tpl.Handler(inputData, TplConfigtx, ConfigDir()+"configtx.yaml")
-	}else if strType == "client" {
-			return tpl.Handler(inputData, TplClient, ConfigDir()+"client.yaml")
 	} else if strType == "crypto-config" {
 		return tpl.Handler(inputData, TplCryptoConfig, ConfigDir()+"crypto-config.yaml")
-	} else if strType == "node" {
+	} else if strType == "node" || strType == "client"{
 		peerdomain := inputData[PeerDomain].(string)
 		kfkdomain := inputData[KfkDomain].(string)
 		list := inputData[List].([]interface{})
@@ -34,6 +32,21 @@ func CreateYamlByJson(strType string) error {
 			nodeType := value[NodeType].(string)
 			dir := ConfigDir()
 			var outfile, tplfile, yamlname string
+			if strType == "client"{
+				if nodeType == TypePeer {
+					//生成api 和  event yaml文件
+					clientname := nodeType + value[PeerId].(string) + "org" + value[OrgId].(string)
+					err := tpl.Handler(value, TplApiClient, ConfigDir()+clientname+"apiclient.yaml")
+					if err != nil {
+						return err
+					}
+					err = tpl.Handler(value, TplEventClient, ConfigDir()+clientname+"eventclient.yaml")
+					if err != nil {
+						return err
+					}
+				}
+				continue
+			}
 			switch nodeType {
 			case TypeZookeeper:
 				yamlname = nodeType + value[ZkId].(string) + value[Zk2Id].(string)

@@ -24,7 +24,6 @@ def load_images(type,images_path):
     else:
         sys.stdout.write("%s image is exsit"%type)
 
-
 def start_node(type, node_id, yaml_name, config_dir):
     dir_name = type + node_id
     with lcd(config_dir):
@@ -39,3 +38,31 @@ def start_node(type, node_id, yaml_name, config_dir):
         run("tar zxvfm %s.tar.gz"%yaml_name)
         run("rm %s.tar.gz"%yaml_name)
         run("docker-compose -f %s.yaml up -d"%yaml_name)
+
+def start_api(peer_id, org_id, config_dir):
+    name = "peer" + peer_id + "org" + org_id
+    apiyamlname = name + "apiclient"
+    eventyamlname = name + "eventclient"
+    #apiserver
+    with lcd(config_dir):
+        local("tar -zcvf %s.tar.gz %s.yaml"%(apiyamlname,apiyamlname))
+        #remote yaml
+        run("mkdir -p ~/fabtest/%s"%apiyamlname)
+        put("%s.tar.gz"%apiyamlname,"~/fabtest/%s"%apiyamlname)
+        local("rm %s.tar.gz"%apiyamlname)
+    with cd("~/fabtest/%s"%apiyamlname):
+        run("tar zxvfm %s.tar.gz"%apiyamlname)
+        run("rm %s.tar.gz"%apiyamlname)
+        run("docker-compose -f %s.yaml up -d"%apiyamlname)
+
+    #eventserver
+    with lcd(config_dir):
+        local("tar -zcvf %s.tar.gz eventserver"%eventyamlname)
+        #remote yaml
+        run("mkdir -p ~/fabtest/%s"%eventyamlname)
+        put("%s.tar.gz"%eventyamlname,"~/fabtest/%s"%eventyamlname)
+        local("rm %s.tar.gz"%eventyamlname)
+    with cd("~/fabtest/%s"%eventyamlname):
+        run("tar zxvfm %s.tar.gz"%eventyamlname)
+        run("rm %s.tar.gz"%eventyamlname)
+        run("nohup %s &"%eventyamlname)

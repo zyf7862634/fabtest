@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/peersafe/fabtest/tpl"
 	"io/ioutil"
 )
 
@@ -17,38 +16,38 @@ func StartNode(stringType string) error {
 		value[PeerDomain] = peerdomain
 		value[KfkDomain] = kfkdomain
 		nodeType := value[NodeType].(string)
-		if nodeType != stringType && stringType != "all"{
-			continue
+		if nodeType != stringType {
+			if stringType == "api" && nodeType == TypePeer{
+				//启动api
+				peerid := value[PeerId].(string)
+				orgid := value[OrgId].(string)
+				obj := NewFabCmd("add_node.py", value[APIIP].(string))
+				err := obj.RunShow("start_api", peerid, orgid, ConfigDir())
+				if err != nil {
+					return err
+				}
+			} else if stringType != "all" {
+				continue
+			}
 		}
-		dir := ConfigDir()
-		var nodeId, outfile, tplfile, yamlname string
+		var nodeId, yamlname string
 		switch nodeType {
 		case TypeZookeeper:
 			nodeId = value[ZkId].(string) + value[Zk2Id].(string)
 			yamlname = nodeType + value[ZkId].(string) + value[Zk2Id].(string)
-			tplfile = TplZookeeper
 		case TypeKafka:
 			nodeId = value[KfkId].(string)
 			yamlname = nodeType + value[KfkId].(string)
-			tplfile = TplKafka
 		case TypeOrder:
 			nodeId = value[OrderId].(string)
 			yamlname = nodeType + value[OrderId].(string) + "org" + value[OrgId].(string)
-			tplfile = TplOrderer
 		case TypePeer:
 			nodeId = value[PeerId].(string)
 			yamlname = nodeType + value[PeerId].(string) + "org" + value[OrgId].(string)
-			tplfile = TplPeer
-		}
-		//生成yaml文件
-		outfile = dir + yamlname
-		err := tpl.Handler(value, tplfile, outfile+".yaml")
-		if err != nil {
-			fmt.Errorf(err.Error())
 		}
 		//启动节点
 		obj := NewFabCmd("add_node.py", value[IP].(string))
-		err = obj.RunShow("start_node", nodeType, nodeId, yamlname, ConfigDir())
+		err := obj.RunShow("start_node", nodeType, nodeId, yamlname, ConfigDir())
 		if err != nil {
 			return err
 		}

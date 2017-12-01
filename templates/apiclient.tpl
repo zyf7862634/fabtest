@@ -35,7 +35,29 @@ client:
             # Certificate location absolute path
             certificate: "./crypto-config/ordererOrganizations/ord{{.org_id}}.{{.peer_domain}}/orderers/orderer{{.peer_id}}.{{.org_id}}.{{.peer_domain}}/msp/tlscacerts/tlsca.ord{{.org_id}}.{{.peer_domain}}-cert.pem"
             serverHostOverride: "orderer{{.peer_id}}"
-
+###############################################################################
+#
+#    Peer section
+#
+###############################################################################
+peer:
+    listenAddress: peer{{.peer_id}}.org{{.org_id}}.{{.peer_domain}}:7053
+    gomaxprocs: -1
+    workers: 2
+    tls:
+        enabled: true
+        rootcert:
+            file: ./crypto-config/peerOrganizations/org{{.org_id}}.{{.peer_domain}}/peers/peer{{.peer_id}}.org{{.org_id}}.{{.peer_domain}}/tls/ca.crt
+        serverhostoverride: peer{{.peer_id}}
+    BCCSP:
+        Default: SW
+        SW:
+            Hash: SHA2
+            Security: 256
+            FileKeyStore:
+                KeyStore:
+    mspConfigPath: ./crypto-config/peerOrganizations/org{{.org_id}}.{{.peer_domain}}/users/Admin@org{{.org_id}}.{{.peer_domain}}/msp
+    localMspId: Org{{.org_id}}MSP
 ###############################################################################
 #
 #    Chaincode section
@@ -43,24 +65,12 @@ client:
 ###############################################################################
 chaincode:
     id:
-        name: {{.ccname}}
-        version: "{{.ccversion}}"
-        chainID: {{.channelname}}
+        name: ccname
+        version: "1.0"
+        chainID: channelname
 
 user:
     alias: zhengfu998
 
 apiserver:
     listenport: {{.apiport}}
-    probe_order: "orderer{{.peer_id}}.{{.org_id}}.{{.peer_domain}} 7050"
-###############################################################################
-#
-#    other section
-#
-###############################################################################
-other:
-    mq_address:
-      - "amqp://testpoc:123456@10.10.255.71:5672/"
-      - "amqp://testpoc:123456@10.10.255.72:5672/"
-    queue_name: "fftQueue"
-    system_queue_name: "sys_fftQueue"

@@ -9,7 +9,7 @@ import (
 
 var (
 	file        = flag.String("f", "", "configtx, crypto-config, node, client ' create yaml file '")
-	start       = flag.String("s", "", "peer, order, zookeeper, kafka, all  'start node '")
+	start       = flag.String("s", "", "peer, order, zookeeper, kafka, all ,api 'start node or api'")
 	image       = flag.String("i", "", "peer, order, zookeeper, kafka, all  'load image'")
 	create      = flag.String("c", "", "crypto, genesisblock, channel, 'create source'")
 	channelname = flag.String("n", "", "channelname")

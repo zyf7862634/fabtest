@@ -16,7 +16,8 @@ const (
 	TplPeer         = "./templates/peer.tpl"
 	TplCryptoConfig = "./templates/crypto-config.tpl"
 	TplConfigtx     = "./templates/configtx.tpl"
-	TplClient     = "./templates/apiclient.tpl"
+	TplApiClient     = "./templates/apiclient.tpl"
+	TplEventClient     = "./templates/eventclient.tpl"
 
 	TypePeer      = "peer"
 	TypeOrder     = "order"
@@ -30,6 +31,7 @@ const (
 	ZkId = "zk_id"
 	Zk2Id = "zk_2_id"
 	IP = "ip"
+	APIIP = "apiip"
 	IP1 = "ip1"
 	IP2 = "ip2"
 	IP3 = "ip3"
